@@ -1,7 +1,9 @@
 package com.aooci.accws;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.HashSet;
@@ -13,7 +15,7 @@ public class ACCWS {
 	private Set<String> sIndex;
 	
 	public ACCWS() {
-		init();
+		loadInternalDictionary();
 	}
 	
 	   public String processStringMaxMatch(String text){
@@ -92,24 +94,47 @@ public class ACCWS {
 		}
             return segmentedText.toString();
 	}
-
-	private void init(){
-        this.sIndex = new HashSet<String>();
+	
+	public void setExtendedDictionary(String dictFile){
+		int internalDictionarySize = this.sIndex.size();
         try {
-            CSVReader reader = new CSVReader(new InputStreamReader(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/cedict_ts.d"), Charset.forName("UTF-8")), '\t');
+			this.chargeIndex(new FileInputStream(dictFile));
+			System.out.println("Extended dictionary : " + dictFile);
+			System.out.println("Extended dictionary size : " + (this.sIndex.size() - internalDictionarySize));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void loadInternalDictionary(){
+        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/cedict_ts.d"));
+        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/area_cn.d"));
+        System.out.println("Internal dictionary size : " + this.sIndex.size());
+	}
+	
+	private void chargeIndex(InputStream in){
+		if(this.sIndex == null){
+			this.sIndex = new HashSet<String>();
+		}
+		CSVReader reader = null;
+        try {
+            reader = new CSVReader(new InputStreamReader(in, Charset.forName("UTF-8")), '\t');
             String [] nextLine;
-            
             while ((nextLine = reader.readNext()) != null) {
             	this.sIndex.add( nextLine[0]);
     		}            
-            reader.close();
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        }finally{
+        	if(reader != null){
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+        	}
         }
-        System.out.println("Loaded index size : " + this.sIndex.size());
 	}
-
 }
