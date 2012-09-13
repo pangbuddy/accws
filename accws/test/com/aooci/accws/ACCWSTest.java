@@ -19,6 +19,7 @@ public class ACCWSTest {
         long start = System.currentTimeMillis();
         try {
         	ACCWS accws = new ACCWS();
+        	accws.setExtendedDictionary("input/dict.d");
             DataInputStream in = new DataInputStream(new FileInputStream("input/test_1m.txt"));
             BufferedReader br = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
             Writer out = new OutputStreamWriter(new FileOutputStream("output/test_1m_result.txt"), "UTF-8");
