@@ -20,13 +20,12 @@ public class ACCWSTest {
         try {
         	ACCWS accws = new ACCWS();
         	accws.setExtendedDictionary("input/dict.d");
-            DataInputStream in = new DataInputStream(new FileInputStream("input/test_1m.txt"));
+            DataInputStream in = new DataInputStream(new FileInputStream("input/pku_test.txt"));
             BufferedReader br = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
-            Writer out = new OutputStreamWriter(new FileOutputStream("output/test_1m_result.txt"), "UTF-8");
+            Writer out = new OutputStreamWriter(new FileOutputStream("output/result.txt"), "UTF-8");
             String line;
             while ((line = br.readLine()) != null) {
-
-                out.write(accws.processStringMaxMatch(line) + System.getProperty("line.separator"));
+                out.write(accws.processReverseMax(line, "  ") + System.getProperty("line.separator"));
             }
             
             in.close();
@@ -37,6 +36,17 @@ public class ACCWSTest {
         System.out.println("Done : " + (System.currentTimeMillis() - start));
 
 		//fail("Not yet implemented");
+	}
+	
+	//@Test
+	public void testLine(){
+		
+		ACCWS accws = new ACCWS();
+		accws.setExtendedDictionary("input/dict.d");
+		String inputLine = "让百姓信得过———贵州省检察机关队伍建设记事";
+		System.out.println("●|" + inputLine);
+		System.out.println("○|" + accws.processReverseMax(inputLine, "  "));
+		
 	}
 
 }
