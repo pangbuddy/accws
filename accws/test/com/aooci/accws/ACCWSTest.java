@@ -20,7 +20,7 @@ public class ACCWSTest {
         try {
         	ACCWS accws = new ACCWS();
         	accws.setExtendedDictionary("input/dict.d");
-            DataInputStream in = new DataInputStream(new FileInputStream("input/pku_28288_test.txt"));
+            DataInputStream in = new DataInputStream(new FileInputStream("input/1998_people_test.txt"));
             BufferedReader br = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
             Writer out = new OutputStreamWriter(new FileOutputStream("output/result.txt"), "UTF-8");
             String line;
@@ -38,12 +38,12 @@ public class ACCWSTest {
 		//fail("Not yet implemented");
 	}
 	
-	@Test
+	//@Test
 	public void testLine(){
 		
 		ACCWS accws = new ACCWS();
 		accws.setExtendedDictionary("input/dict.d");
-		String inputLine = "该系统便会自动运转，";
+		String inputLine = "本报记者刘亮明";
 		System.out.println("●|" + inputLine);
 		System.out.println("○|" + accws.processReverseMax(inputLine, "  "));
 		
