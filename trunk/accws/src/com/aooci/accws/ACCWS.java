@@ -23,7 +23,7 @@ public class ACCWS {
 	}
 	
 	private String cleanText(String text){
-		text = text.replaceAll("([\\w\\.%％℃]+)", " $1 ");
+		text = text.replaceAll("([\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日]{2,})", " $1 ");
 		text = text.replaceAll("(?<=[\\pP‘’“”])", " ");
 		text = text.replaceAll("\\s{2,}", " ");
 		return text;
@@ -33,7 +33,7 @@ public class ACCWS {
 		text = this.cleanText(text);
 		StringBuilder segmentedText = new StringBuilder();
 		for (String sentence : text.split("\\s")) {
-			if (sentence.matches("[a-zA-Z0-9_\\pP‘’“”]*")) {
+			if (sentence.matches("[a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日]*")) {
 				segmentedText.append(sentence + delimiter);
 			} else {
 				StringBuilder segmentedSentence = new StringBuilder();
@@ -77,6 +77,7 @@ public class ACCWS {
 	private void loadInternalDictionary(){
         this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/cedict_ts.d"));
         this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/area_cn.d"));
+        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/idiom.d"));
         System.out.println("Internal dictionary size : " + this.sIndex.size());
 	}
 	

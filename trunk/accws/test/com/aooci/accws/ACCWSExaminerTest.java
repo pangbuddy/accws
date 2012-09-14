@@ -7,7 +7,7 @@ public class ACCWSExaminerTest {
 	@Test
 	public void testExamine() {
 		//ACCWSExaminer.examine("\\s\\s", "input/pku_test_gold.txt", "input/pku_test_gold.txt");
-		ACCWSExaminer.examine("input/pku_test_gold.txt", "output/result.txt", "\\s\\s", true);
+		ACCWSExaminer.examine("input/pku_28288_gold.txt", "output/result.txt", "\\s", true);
 	}
 
 }
