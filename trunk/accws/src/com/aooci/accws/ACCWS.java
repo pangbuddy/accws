@@ -6,13 +6,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import au.com.bytecode.opencsv.CSVReader;
 
 public class ACCWS {
 	private Set<String> sIndex;
+	private final static String REGEX_COMPACT_WORD = "[a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．]*";
 	
 	public ACCWS() {
 		loadInternalDictionary();
@@ -28,15 +31,81 @@ public class ACCWS {
 		text = text.replaceAll("\\s{2,}", " ");
 		return text;
 	}
-
-	public String processReverseMax(String text, String delimiter) {
+	
+	public List<String> processRegularMin(String text, String delimiter){
 		text = this.cleanText(text);
-		StringBuilder segmentedText = new StringBuilder();
+		List<String> segmentedText = new ArrayList<String>();
 		for (String sentence : text.split("\\s")) {
-			if (sentence.matches("[a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．]*")) {
-				segmentedText.append(sentence + delimiter);
+			if (sentence.matches(REGEX_COMPACT_WORD)) {
+				segmentedText.add(sentence);
 			} else {
-				StringBuilder segmentedSentence = new StringBuilder();
+				List<String> segmentedSentence = new ArrayList<String>();
+				int begin = 0;
+				int end = begin + 1;
+				while (begin < sentence.length()) {
+					String word = "";
+					while (end < sentence.length()) {
+						if (sIndex.contains(sentence.substring(begin, end))) {
+							word = sentence.substring(begin, end);
+							begin = end;
+							break;
+						}
+						end++;
+					}
+					if (word.isEmpty()) {
+						word = sentence.substring(begin, begin + 1);
+						begin++;
+					}
+					end = begin + 1;
+					segmentedSentence.add(word);
+				}
+				segmentedText.addAll(segmentedSentence);
+			}
+		}
+		return segmentedText;
+	}
+
+	public List<String> processRegularMax(String text, String delimiter){
+		text = this.cleanText(text);
+		List<String> segmentedText = new ArrayList<String>();
+		for (String sentence : text.split("\\s")) {
+			if (sentence.matches(REGEX_COMPACT_WORD)) {
+				segmentedText.add(sentence);
+			} else {
+				List<String> segmentedSentence = new ArrayList<String>();
+				int begin = 0;
+				int end = sentence.length();
+				while (begin < sentence.length()) {
+					String word = "";
+					while (begin < end) {
+						if (sIndex.contains(sentence.substring(begin, end))) {
+							word = sentence.substring(begin, end);
+							begin = end;
+							break;
+						}
+						end--;
+					}
+					if (word.isEmpty()) {
+						word = sentence.substring(begin, begin + 1);
+						begin++;
+					}
+					end = sentence.length();
+					segmentedSentence.add(word);
+				}
+				segmentedText.addAll(segmentedSentence);
+			}
+		}
+		return segmentedText;
+	}
+
+	public List<String> processReverseMax(String text, String delimiter){
+		text = this.cleanText(text);
+		List<String> segmentedText = new ArrayList<String>();
+		for (String sentence : text.split("\\s")) {
+			if (sentence.matches(REGEX_COMPACT_WORD)) {
+				segmentedText.add(sentence);
+			} else {
+				List<String> segmentedSentence = new ArrayList<String>();
 				int begin = 0;
 				int end = sentence.length();
 				while (end > 0) {
@@ -45,22 +114,21 @@ public class ACCWS {
 						if (sIndex.contains(sentence.substring(begin, end))) {
 							word = sentence.substring(begin, end);
 							end = begin;
-
 							break;
 						}
 						begin++;
 					}
 					if (word.isEmpty()) {
 						word = sentence.substring(end - 1, end);
-						end -= 1;
+						end--;
 					}
 					begin = 0;
-					segmentedSentence.insert(0, word + delimiter);
+					segmentedSentence.add(0, word);
 				}
-				segmentedText.append(segmentedSentence);
+				segmentedText.addAll(segmentedSentence);
 			}
 		}
-		return segmentedText.toString();
+		return segmentedText;
 	}
 
 	public void setExtendedDictionary(String dictFile){

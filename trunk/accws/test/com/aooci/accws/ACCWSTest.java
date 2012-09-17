@@ -13,7 +13,7 @@ import org.junit.Test;
 
 public class ACCWSTest {
 
-	@Test
+	//@Test
 	public void testACCWS() {
 
         long start = System.currentTimeMillis();
@@ -25,7 +25,12 @@ public class ACCWSTest {
             Writer out = new OutputStreamWriter(new FileOutputStream("output/result.txt"), "UTF-8");
             String line;
             while ((line = br.readLine()) != null) {
-                out.write(accws.processReverseMax(line, " ") + System.getProperty("line.separator"));
+            	
+            	
+            	
+            	
+                out.write(accws.processRegularMax(line, " ") + System.getProperty("line.separator"));
+                accws.processReverseMax(line, " ");
             }
             
             in.close();
@@ -38,14 +43,16 @@ public class ACCWSTest {
 		//fail("Not yet implemented");
 	}
 	
-	//@Test
+	@Test
 	public void testLine(){
 		
 		ACCWS accws = new ACCWS();
 		accws.setExtendedDictionary("input/dict.d");
-		String inputLine = "本报记者刘亮明";
-		System.out.println("●|" + inputLine);
-		System.out.println("○|" + accws.processReverseMax(inputLine, "  "));
+		String inputLine = "结婚的和尚未结婚的, 中外科学名著, 北京大学生前来应聘, 为人民办公益, 他说的确实在理";
+		System.out.println(" ●|" + inputLine);
+		System.out.println("=<|" + accws.processReverseMax(inputLine, "  "));
+		System.out.println("=>|" + accws.processRegularMax(inputLine, "  "));
+		System.out.println("->|" + accws.processRegularMin(inputLine, "  "));
 		
 	}
 
