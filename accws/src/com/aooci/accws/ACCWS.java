@@ -21,18 +21,58 @@ public class ACCWS {
 		loadInternalDictionary();
 	}
 	
-	public String processPositiveMax(String text){
-		return null;
+	public String getSeparatorString(List<String> words, String separator){
+		StringBuilder separatorString = new StringBuilder();
+    	for(String word : words)
+    		separatorString.append(word + separator);
+    	return separatorString.toString();
 	}
 	
 	private String cleanText(String text){
-		text = text.replaceAll("([\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．]{2,})", " $1 ");
+		//text = text.replaceAll("([\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．]{2,})", " $1 ");
+		text = text.replaceAll("([\\w\\.%％℃１２３４５６７８９０·．]{2,})", " $1 ");
 		text = text.replaceAll("(?<=[\\pP‘’“”])", " ");
+		text = text.replaceAll("(?=[\\pP‘’“”])", " ");
 		text = text.replaceAll("\\s{2,}", " ");
+		text = text.replaceAll("(?<=[\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．—])\\s(?=[\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．—])", "");
+		
 		return text;
 	}
 	
-	public List<String> processRegularMin(String text, String delimiter){
+	public List<String> processReverseMax(String text){
+		text = this.cleanText(text);
+		List<String> segmentedText = new ArrayList<String>();
+		for (String sentence : text.split("\\s")) {
+			if (sentence.matches(REGEX_COMPACT_WORD) || (sentence.matches("[—]+"))) {
+				segmentedText.add(sentence);
+			} else {
+				List<String> segmentedSentence = new ArrayList<String>();
+				int begin = 0;
+				int end = sentence.length();
+				while (end > 0) {
+					String word = "";
+					while (begin < end) {
+						if (sIndex.contains(sentence.substring(begin, end))) {
+							word = sentence.substring(begin, end);
+							end = begin;
+							break;
+						}
+						begin++;
+					}
+					if (word.isEmpty()) {
+						word = sentence.substring(end - 1, end);
+						end--;
+					}
+					begin = 0;
+					segmentedSentence.add(0, word);
+				}
+				segmentedText.addAll(segmentedSentence);
+			}
+		}
+		return segmentedText;
+	}
+	
+	public List<String> processRegularMin(String text){
 		text = this.cleanText(text);
 		List<String> segmentedText = new ArrayList<String>();
 		for (String sentence : text.split("\\s")) {
@@ -65,7 +105,7 @@ public class ACCWS {
 		return segmentedText;
 	}
 
-	public List<String> processRegularMax(String text, String delimiter){
+	public List<String> processRegularMax(String text){
 		text = this.cleanText(text);
 		List<String> segmentedText = new ArrayList<String>();
 		for (String sentence : text.split("\\s")) {
@@ -98,39 +138,6 @@ public class ACCWS {
 		return segmentedText;
 	}
 
-	public List<String> processReverseMax(String text, String delimiter){
-		text = this.cleanText(text);
-		List<String> segmentedText = new ArrayList<String>();
-		for (String sentence : text.split("\\s")) {
-			if (sentence.matches(REGEX_COMPACT_WORD)) {
-				segmentedText.add(sentence);
-			} else {
-				List<String> segmentedSentence = new ArrayList<String>();
-				int begin = 0;
-				int end = sentence.length();
-				while (end > 0) {
-					String word = "";
-					while (begin < end) {
-						if (sIndex.contains(sentence.substring(begin, end))) {
-							word = sentence.substring(begin, end);
-							end = begin;
-							break;
-						}
-						begin++;
-					}
-					if (word.isEmpty()) {
-						word = sentence.substring(end - 1, end);
-						end--;
-					}
-					begin = 0;
-					segmentedSentence.add(0, word);
-				}
-				segmentedText.addAll(segmentedSentence);
-			}
-		}
-		return segmentedText;
-	}
-
 	public void setExtendedDictionary(String dictFile){
 		int internalDictionarySize = this.sIndex.size();
         try {
@@ -143,6 +150,9 @@ public class ACCWS {
 	}
 
 	private void loadInternalDictionary(){
+		if(this.sIndex == null){
+			this.sIndex = new HashSet<String>();
+		}
         this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/cedict_ts.d"));
         this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/area_cn.d"));
         this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/idiom.d"));
@@ -150,9 +160,6 @@ public class ACCWS {
 	}
 	
 	private void chargeIndex(InputStream in){
-		if(this.sIndex == null){
-			this.sIndex = new HashSet<String>();
-		}
 		CSVReader reader = null;
         try {
             reader = new CSVReader(new InputStreamReader(in, Charset.forName("UTF-8")), '\t');
