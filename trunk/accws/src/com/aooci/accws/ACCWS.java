@@ -16,6 +16,8 @@ import au.com.bytecode.opencsv.CSVReader;
 public class ACCWS {
 	private Set<String> sIndex;
 	private Set<String> lastNameIndex;
+	private Set<String> suffixIndex;
+	
 	private final static String REGEX_COMPACT_WORD = "[a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日时分秒·．]*";
 	
 	public ACCWS() {
@@ -36,11 +38,13 @@ public class ACCWS {
 		text = text.replaceAll("(?=[\\pP‘’“”])", " ");
 		text = text.replaceAll("\\s{2,}", " ");
 		text = text.replaceAll("(?<=[\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日时分秒·．—])\\s(?=[\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．—])", "");
+		text = text.replaceAll("(?<=[\\w１２３４５６７８９０零一二三四五六七八九十]+[年月日])", " ");
+		text = text.replaceAll("\\s{2,}", " ");
 		
 		return text;
 	}
 	
-	public void identifyPersonName(List<String> words){
+	private void identifyPersonName(List<String> words){
 		for(int index = 0 ; index < words.size()-2 ; index++){
 			if((words.get(index).length() < 2) && 
 					(words.get(index+1).length() < 2) && 
@@ -52,7 +56,23 @@ public class ACCWS {
 				words.remove(index+1);
 				words.remove(index+1);
 				words.add(index+1, name);
-				
+			}
+		}
+	}
+	
+	private void suffixCombination(List<String> words){
+		for(int index = 1 ; index < words.size() ; index++){
+			if((words.get(index).length() < 2) && 
+					//this.suffixIndex.contains(words.get(index)) &&
+					//(words.get(index+1).length() < 2) && 
+					//(words.get(index+2).length() < 2) && 
+					//words.get(index+1).matches("[^a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十·．]") && 
+					//words.get(index+2).matches("[^a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十·．]") && 
+					this.suffixIndex.contains(words.get(index))){
+				String newWord = words.get(index-1) + words.get(index);
+				words.remove(index-1);
+				words.remove(index-1);
+				words.add(index-1, newWord);
 			}
 		}
 	}
@@ -88,13 +108,14 @@ public class ACCWS {
 			}
 		}
 		try{
-		this.identifyPersonName(segmentedText);
+			this.identifyPersonName(segmentedText);
+			this.suffixCombination(segmentedText);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		return segmentedText;
 	}
-	
+	/*
 	public List<String> processRegularMin(String text){
 		text = this.cleanText(text);
 		List<String> segmentedText = new ArrayList<String>();
@@ -127,7 +148,7 @@ public class ACCWS {
 		}
 		return segmentedText;
 	}
-
+*/
 	public List<String> processRegularMax(String text){
 		text = this.cleanText(text);
 		List<String> segmentedText = new ArrayList<String>();
@@ -173,19 +194,20 @@ public class ACCWS {
 	}
 
 	private void loadInternalDictionary(){
-		if(this.sIndex == null){
-			this.sIndex = new HashSet<String>();
-		}
-        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/cedict_ts.d"), this.sIndex);
+		this.sIndex = new HashSet<String>();
+		this.lastNameIndex = new HashSet<String>();
+        this.suffixIndex = new HashSet<String>();
+		
+		this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/cedict_ts.d"), this.sIndex);
         this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/area_cn.d"), this.sIndex);
         this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/idiom.d"), this.sIndex);
         System.out.println("Internal dictionary size : " + this.sIndex.size());
-        
-        if(this.lastNameIndex == null){
-			this.lastNameIndex = new HashSet<String>();
-		}
+
         this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/last_name_cn.d"), this.lastNameIndex);
         System.out.println("Chinese last name dictionary size : " + this.lastNameIndex.size());  
+        
+        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/suffix.d"), this.suffixIndex);
+        System.out.println("Suffix dictionary size : " + this.suffixIndex.size());  
 	}
 	
 	private void chargeIndex(InputStream in, Set<String> index){
