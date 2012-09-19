@@ -15,7 +15,8 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class ACCWS {
 	private Set<String> sIndex;
-	private final static String REGEX_COMPACT_WORD = "[a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．]*";
+	private Set<String> lastNameIndex;
+	private final static String REGEX_COMPACT_WORD = "[a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日时分秒·．]*";
 	
 	public ACCWS() {
 		loadInternalDictionary();
@@ -29,14 +30,31 @@ public class ACCWS {
 	}
 	
 	private String cleanText(String text){
-		//text = text.replaceAll("([\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．]{2,})", " $1 ");
-		text = text.replaceAll("([\\w\\.%％℃１２３４５６７８９０·．]{2,})", " $1 ");
+		text = text.replaceAll("([\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日时分秒·．]{2,})", " $1 ");
+		//text = text.replaceAll("([\\w\\.%％℃１２３４５６７８９０·．]{2,})", " $1 ");
 		text = text.replaceAll("(?<=[\\pP‘’“”])", " ");
 		text = text.replaceAll("(?=[\\pP‘’“”])", " ");
 		text = text.replaceAll("\\s{2,}", " ");
-		text = text.replaceAll("(?<=[\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．—])\\s(?=[\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．—])", "");
+		text = text.replaceAll("(?<=[\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日时分秒·．—])\\s(?=[\\w\\.%％℃１２３４５６７８９０零一二三四五六七八九十点百千万亿兆年月日·．—])", "");
 		
 		return text;
+	}
+	
+	public void identifyPersonName(List<String> words){
+		for(int index = 0 ; index < words.size()-2 ; index++){
+			if((words.get(index).length() < 2) && 
+					(words.get(index+1).length() < 2) && 
+					(words.get(index+2).length() < 2) && 
+					words.get(index+1).matches("[^a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十·．]") && 
+					words.get(index+2).matches("[^a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十·．]") && 
+					this.lastNameIndex.contains(words.get(index))){
+				String name = words.get(index+1) + words.get(index+2);
+				words.remove(index+1);
+				words.remove(index+1);
+				words.add(index+1, name);
+				
+			}
+		}
 	}
 	
 	public List<String> processReverseMax(String text){
@@ -68,6 +86,11 @@ public class ACCWS {
 				}
 				segmentedText.addAll(segmentedSentence);
 			}
+		}
+		try{
+		this.identifyPersonName(segmentedText);
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 		return segmentedText;
 	}
@@ -141,7 +164,7 @@ public class ACCWS {
 	public void setExtendedDictionary(String dictFile){
 		int internalDictionarySize = this.sIndex.size();
         try {
-			this.chargeIndex(new FileInputStream(dictFile));
+			this.chargeIndex(new FileInputStream(dictFile), this.sIndex);
 			System.out.println("Extended dictionary : " + dictFile);
 			System.out.println("Extended dictionary size : " + (this.sIndex.size() - internalDictionarySize));
 		} catch (FileNotFoundException e) {
@@ -153,19 +176,25 @@ public class ACCWS {
 		if(this.sIndex == null){
 			this.sIndex = new HashSet<String>();
 		}
-        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/cedict_ts.d"));
-        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/area_cn.d"));
-        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/idiom.d"));
+        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/cedict_ts.d"), this.sIndex);
+        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/area_cn.d"), this.sIndex);
+        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/idiom.d"), this.sIndex);
         System.out.println("Internal dictionary size : " + this.sIndex.size());
+        
+        if(this.lastNameIndex == null){
+			this.lastNameIndex = new HashSet<String>();
+		}
+        this.chargeIndex(ACCWS.class.getResourceAsStream("/com/aooci/accws/dict/last_name_cn.d"), this.lastNameIndex);
+        System.out.println("Chinese last name dictionary size : " + this.lastNameIndex.size());  
 	}
 	
-	private void chargeIndex(InputStream in){
+	private void chargeIndex(InputStream in, Set<String> index){
 		CSVReader reader = null;
         try {
             reader = new CSVReader(new InputStreamReader(in, Charset.forName("UTF-8")), '\t');
             String [] nextLine;
             while ((nextLine = reader.readNext()) != null) {
-            	this.sIndex.add( nextLine[0]);
+            	index.add( nextLine[0]);
     		}            
         } catch (FileNotFoundException e) {
             e.printStackTrace();
