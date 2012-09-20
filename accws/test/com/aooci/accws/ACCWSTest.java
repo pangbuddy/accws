@@ -26,6 +26,7 @@ public class ACCWSTest {
             String line;
             while ((line = br.readLine()) != null) {
                 out.write(accws.getSeparatorString(accws.processReverseMax(line), " ") + System.getProperty("line.separator"));
+                //out.write(accws.processReverseMax(line) + System.getProperty("line.separator"));
             }
             
             in.close();
@@ -45,12 +46,12 @@ public class ACCWSTest {
 		accws.setExtendedDictionary("input/dict.d");
 
 		//String inputLine = "结婚的和尚未结婚的, 中外科学名著, 北京大学生前来应聘, 为人民办公益, 他说的确实在理,“提高产品质量”、“鞭炮声响彻夜空”、“努力学习语法规则”";
-		String inputLine = "我征求爷爷的意见。爷爷说：“早先，日本鬼子的飞机，中国吉林雾凇冰雪节的正式表演项目, 2001年1月1日零时，涉及科局级干部13人。其中有一位开发区管委会主任，是该院一名女干警的家属。这位主任负责基金会工作，因滥用职权损失贷款80多万元。院领导做通了这名女干警的思想工作，这名女干警积极配合办案人员，顶住各方压力查清了案件。";
+		String inputLine = "党的第十五次全国代表大会,我不能具体地计算出一棵千年大树一天一年可涵养多少水量，是在六年前的大年三十春节联欢晚会上, 欧阳中石, 王十川, 我征求爷爷的意见。爷爷说：“早先，日本鬼子的飞机，中国吉林雾凇冰雪节的正式表演项目, 2001年1月1日零时，涉及科局级干部13人。其中有一位开发区管委会主任，是该院一名女干警的家属。这位主任负责基金会工作，因滥用职权损失贷款80多万元。院领导做通了这名女干警的思想工作，这名女干警积极配合办案人员，顶住各方压力查清了案件。";
 		//String inputLine = "（新华社记者李昌元摄）,1999年以来，检察长袁成武上任后决心从一点一滴抓起，福清市发生了陈维华等10人持枪杀人案";
 
 		System.out.println(" ●|" + inputLine);
 		System.out.println("=<|" + accws.processReverseMax(inputLine));
-		System.out.println("=>|" + accws.processRegularMax(inputLine));
+		//System.out.println("=>|" + accws.processRegularMax(inputLine));
 		//System.out.println("->|" + accws.processRegularMin(inputLine));
 	}
 

@@ -46,19 +46,33 @@ public class ACCWS {
 	
 	private void identifyPersonName(List<String> words){
 		for(int index = 0 ; index < words.size()-2 ; index++){
-			if((words.get(index).length() < 2) && 
+			if((words.get(index).length() < 3) && 
 					(words.get(index+1).length() < 2) && 
 					(words.get(index+2).length() < 2) && 
-					words.get(index+1).matches("[^a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十·．]") && 
-					words.get(index+2).matches("[^a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九十·．]") && 
+					words.get(index+1).matches("[^a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九·．]") && 
+					words.get(index+2).matches("[^a-zA-Z0-9_\\pP‘’“”１２３４５６７８９０零一二三四五六七八九·．摄]") && 
 					this.lastNameIndex.contains(words.get(index))){
 				String name = words.get(index+1) + words.get(index+2);
 				words.remove(index+1);
 				words.remove(index+1);
 				words.add(index+1, name);
+				index++;
 			}
 		}
 	}
+	
+    private void identifyS1(List<String> words){
+        for(int index = 0 ; index < words.size()-2 ; index++){
+            if((words.get(index).equals("第")) &&
+                    words.get(index+1).matches("[0-9１２３４５６７８９０零一二三四五六七八九十]+")){
+                String newWord = words.get(index) + words.get(index+1);
+                words.remove(index);
+                words.remove(index);
+                words.add(index, newWord);
+                index++;
+            }
+        }
+    }
 	
 	private void suffixCombination(List<String> words){
 		for(int index = 1 ; index < words.size() ; index++){
@@ -81,14 +95,16 @@ public class ACCWS {
 		text = this.cleanText(text);
 		List<String> segmentedText = new ArrayList<String>();
 		for (String sentence : text.split("\\s")) {
+		    
 			if (sentence.matches(REGEX_COMPACT_WORD) || (sentence.matches("[—]+"))) {
 				segmentedText.add(sentence);
 			} else {
+			
 				List<String> segmentedSentence = new ArrayList<String>();
 				int begin = 0;
 				int end = sentence.length();
 				while (end > 0) {
-					String word = "";
+					String word = "";/**/
 					while (begin < end) {
 						if (sIndex.contains(sentence.substring(begin, end))) {
 							word = sentence.substring(begin, end);
@@ -106,13 +122,17 @@ public class ACCWS {
 				}
 				segmentedText.addAll(segmentedSentence);
 			}
+			
 		}
+		/**/
 		try{
 			this.identifyPersonName(segmentedText);
 			this.suffixCombination(segmentedText);
+			this.identifyS1(segmentedText);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		
 		return segmentedText;
 	}
 	/*
